@@ -1,0 +1,32 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=2014
+
+This plugin tries to duplicate the functionality of Marc Weber's 
+outline.vim (vimscript #1947) on the basis of its description and of 
+vim's own |:g|. Other than outline.vim, it relies on tlib
+(vimscript #1863).
+
+The TToC[!] command can be used to get a quick table of contents of the 
+buffer based on a given regular expression. The regexp can be defined on 
+the command line, in window (w:ttoc_rx), buffer-local (b:ttoc_rx) 
+variables or in global filetype-specific (g:ttoc_rx_{&filetype}) 
+variables. The order actually is: [wbg]:ttoc_rx_{&filetype} > 
+[wbg]:ttoc_rx.
+
+In the list view, you can select a line and either preview it (<c-p>), 
+jump there (<), close the list and jump there (<cr>).
+
+Example:
+
+  " Use the default settings for the current file-type
+  :TToC
+  " Show all words beginning at column 1
+  :TToC ^\w
+  " Show 'if' statements (but not the concluding 'then' statement)
+  :TToC ^\s*if\>.\{-}\ze\s\+then
+  " Show 'if' statements and 3 extra lines
+  :3TToC! \<if\>
+
+TToC only shows the matching string. TToC! works somewhat like |:g| in 
+showing the whole line, only that you can browse/filter the list and 
+select an item after reviewing the results. 
+
