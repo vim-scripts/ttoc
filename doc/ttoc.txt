@@ -15,7 +15,7 @@ variables. The order actually is: [wbg]:ttoc_rx_{&filetype} >
 [wbg]:ttoc_rx.
 
 In the list view, you can select a line and either preview it (<c-p>), 
-jump there (<space>), close the list and jump there (<cr>).
+jump there (<), close the list and jump there (<cr>).
 
 Example: >
 
@@ -54,14 +54,20 @@ installed.
 This script requires tlib (vimscript #1863) to be installed.
 
 Suggested maps (to be set in ~/.vimrc): >
-    noremap <m-t>       :TToC<cr>
-    inoremap <m-t>       <c-o>:TToC<cr>
+    noremap <m-c>       :TToC<cr>
+    inoremap <m-c>       <c-o>:TToC<cr>
 
 and (in case <m-t> is set to open some menu):
-    noremap <Leader>+t  :TToC<cr>
-    noremap <Leader>++t :TToC! 
-    inoremap <Leader>+t  <c-o>:TToC<cr>
-    inoremap <Leader>++t <c-o>:TToC! 
+    noremap  <Leader>cc       :TToC<cr>
+    inoremap <Leader>cc       <c-o>:TToC<cr>
+    noremap  <Leader>c<space> :TToC!
+    inoremap <Leader>c<space> <c-o>:TToC!
+
+The following gives you a |[I| or |]I| like experience but with a IMHO more 
+convenient UI:
+
+    noremap  <Leader>c#       :TToC! <c-r><c-w><cr>
+    inoremap <Leader>c#       <c-o>:TToC! <c-r><c-w><cr>
 
 <Leader>t comes to mind as prefix but this conflicts with Align.vim.
 
@@ -74,10 +80,13 @@ Key maps in the list view:
 
 ------------------------------------------------------------------------
 Contents~
+
     plugin/ttoc.vim
         g:ttoc_markers ...... |g:ttoc_markers|
         g:ttoc_rx ........... |g:ttoc_rx|
         g:ttoc_rx_bib ....... |g:ttoc_rx_bib|
+        g:ttoc_rx_c ......... |g:ttoc_rx_c|
+        g:ttoc_rx_cpp ....... |g:ttoc_rx_cpp|
         g:ttoc_rx_html ...... |g:ttoc_rx_html|
         g:ttoc_rx_perl ...... |g:ttoc_rx_perl|
         g:ttoc_rx_php ....... |g:ttoc_rx_php|
@@ -93,8 +102,8 @@ Contents~
         g:ttoc_world ........ |g:ttoc_world|
         g:ttoc_vertical ..... |g:ttoc_vertical|
         g:ttoc_win_size ..... |g:ttoc_win_size|
-        TToCCollect ......... |TToCCollect|
-        TToC_GetLine_viki ... |TToC_GetLine_viki|
+        TToCCollect ......... |TToCCollect()|
+        TToC_GetLine_viki ... |TToC_GetLine_viki()|
         :TToC ............... |:TToC|
 
 
@@ -121,6 +130,12 @@ set these variables in ~/.vimrc.
 
                                                     *g:ttoc_rx_bib*
 g:ttoc_rx_bib                  (default: '^@\w\+\s*{\s*\zs\S\{-}\ze\s*,')
+
+                                                    *g:ttoc_rx_c*
+g:ttoc_rx_c                    (default: '^[[:alnum:]#].*')
+
+                                                    *g:ttoc_rx_cpp*
+g:ttoc_rx_cpp                  (default: g:ttoc_rx_c)
 
                                                     *g:ttoc_rx_html*
 g:ttoc_rx_html                 (default: '\(<h\d.\{-}</h\d>\|<\(html\|head\|body\|div\|script\|a\s\+name=\).\{-}>\|<.\{-}\<id=.\{-}>\)')
@@ -156,11 +171,11 @@ g:ttoc_rx_tex                  (default: '\C\\\(label\|\(sub\)*\(section\|paragr
 g:ttoc_rx_viki                 (default: '^\(\*\+\|\s*#\l\).*')
 
                                                     *g:ttoc_rx_vim*
-g:ttoc_rx_vim                  (default: '\C^\(fu\%[nction]\|if\|wh\%[ile]\)\>.*')
+g:ttoc_rx_vim                  (default: '\C^\(fu\%[nction]\|com\%[mand]\|if\|wh\%[ile]\)\>.*')
 
                                                     *g:ttoc_world*
 g:ttoc_world
-    ttoc-specific |tlib#input#ListW| configuration.
+    ttoc-specific |tlib#input#ListD| configuration.
     Customizations should be done in ~/.vimrc/after/plugin/ttoc.vim
     E.g. in order to split horizontally, use: >
         let g:ttoc_world.scratch_vertical = 0
@@ -174,10 +189,10 @@ g:ttoc_vertical                (default: '&lines < &co')
 g:ttoc_win_size                (default: '((&lines > &co) ? &lines : &co) / 2')
     Vim code that evaluates to the desired window width/heigth.
 
-                                                    *TToCCollect*
+                                                    *TToCCollect()*
 TToCCollect(world, return_index, ?additional_lines=0)
 
-                                                    *TToC_GetLine_viki*
+                                                    *TToC_GetLine_viki()*
 TToC_GetLine_viki(lnum, acc)
 
                                                     *:TToC*
