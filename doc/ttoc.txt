@@ -69,7 +69,10 @@ convenient UI:
     noremap  <Leader>c#       :TToC! <c-r><c-w><cr>
     inoremap <Leader>c#       <c-o>:TToC! <c-r><c-w><cr>
 
-<Leader>t comes to mind as prefix but this conflicts with Align.vim.
+Or open the search in a "background" window:
+
+    noremap  <Leader>cb       :Ttocbg! <c-r><c-w><cr>
+    inoremap <Leader>cb       <c-o>:Ttocbg! <c-r><c-w><cr>
 
 Key maps in the list view:
     <c-p>   ... preview selected item
@@ -78,36 +81,40 @@ Key maps in the list view:
     <esc>   ... close the TOC, jump back to the original position
 
 
-------------------------------------------------------------------------
+========================================================================
 Contents~
 
     plugin/ttoc.vim
-        g:ttoc_markers ...... |g:ttoc_markers|
-        g:ttoc_rx ........... |g:ttoc_rx|
-        g:ttoc_rx_bib ....... |g:ttoc_rx_bib|
-        g:ttoc_rx_c ......... |g:ttoc_rx_c|
-        g:ttoc_rx_cpp ....... |g:ttoc_rx_cpp|
-        g:ttoc_rx_html ...... |g:ttoc_rx_html|
-        g:ttoc_rx_perl ...... |g:ttoc_rx_perl|
-        g:ttoc_rx_php ....... |g:ttoc_rx_php|
-        g:ttoc_rx_python .... |g:ttoc_rx_python|
-        g:ttoc_rx_rd ........ |g:ttoc_rx_rd|
-        g:ttoc_rx_ruby ...... |g:ttoc_rx_ruby|
-        g:ttoc_rx_scheme .... |g:ttoc_rx_scheme|
-        g:ttoc_rx_sh ........ |g:ttoc_rx_sh|
-        g:ttoc_rx_tcl ....... |g:ttoc_rx_tcl|
-        g:ttoc_rx_tex ....... |g:ttoc_rx_tex|
-        g:ttoc_rx_viki ...... |g:ttoc_rx_viki|
-        g:ttoc_rx_vim ....... |g:ttoc_rx_vim|
-        g:ttoc_world ........ |g:ttoc_world|
-        g:ttoc_vertical ..... |g:ttoc_vertical|
-        g:ttoc_win_size ..... |g:ttoc_win_size|
-        TToCCollect ......... |TToCCollect()|
-        TToC_GetLine_viki ... |TToC_GetLine_viki()|
-        :TToC ............... |:TToC|
+        g:ttoc_markers ......... |g:ttoc_markers|
+        g:ttoc_rx .............. |g:ttoc_rx|
+        g:ttoc_rx_bib .......... |g:ttoc_rx_bib|
+        g:ttoc_rx_c ............ |g:ttoc_rx_c|
+        g:ttoc_rx_cpp .......... |g:ttoc_rx_cpp|
+        g:ttoc_rx_html ......... |g:ttoc_rx_html|
+        g:ttoc_rx_java ......... |g:ttoc_rx_java|
+        g:ttoc_rx_javascript ... |g:ttoc_rx_javascript|
+        g:ttoc_rx_perl ......... |g:ttoc_rx_perl|
+        g:ttoc_rx_php .......... |g:ttoc_rx_php|
+        g:ttoc_rx_python ....... |g:ttoc_rx_python|
+        g:ttoc_rx_rd ........... |g:ttoc_rx_rd|
+        g:ttoc_rx_ruby ......... |g:ttoc_rx_ruby|
+        g:ttoc_rx_scheme ....... |g:ttoc_rx_scheme|
+        g:ttoc_rx_sh ........... |g:ttoc_rx_sh|
+        g:ttoc_rx_tcl .......... |g:ttoc_rx_tcl|
+        g:ttoc_rx_tex .......... |g:ttoc_rx_tex|
+        g:ttoc_rx_viki ......... |g:ttoc_rx_viki|
+        g:ttoc_rx_vim .......... |g:ttoc_rx_vim|
+        g:ttoc_world ........... |g:ttoc_world|
+        g:ttoc_vertical ........ |g:ttoc_vertical|
+        g:ttoc_win_size ........ |g:ttoc_win_size|
+        TToC_GetLine_viki ...... |TToC_GetLine_viki()|
+        TToC_GetLine_bib ....... |TToC_GetLine_bib()|
+        :TToC .................. |:TToC|
+        :Ttoc .................. |:Ttoc|
+        :Ttocbg ................ |:Ttocbg|
 
 
-------------------------------------------------------------------------
+========================================================================
 plugin/ttoc.vim~
 
                                                     *g:ttoc_markers*
@@ -139,6 +146,12 @@ g:ttoc_rx_cpp                  (default: g:ttoc_rx_c)
 
                                                     *g:ttoc_rx_html*
 g:ttoc_rx_html                 (default: '\(<h\d.\{-}</h\d>\|<\(html\|head\|body\|div\|script\|a\s\+name=\).\{-}>\|<.\{-}\<id=.\{-}>\)')
+
+                                                    *g:ttoc_rx_java*
+g:ttoc_rx_java                 (default: '^\s*\(\(package\|import\|private\|public\|protected\|void\|int\|boolean\)\s\+\|\u\).*')
+
+                                                    *g:ttoc_rx_javascript*
+g:ttoc_rx_javascript           (default: '^\s*\(var\s\+.\{-}\|\w\+\s*:\s*.\{-}\)\s*$')
 
                                                     *g:ttoc_rx_perl*
 g:ttoc_rx_perl                 (default: '^\([$%@]\|\s*\(use\|sub\)\>\).*')
@@ -189,14 +202,14 @@ g:ttoc_vertical                (default: '&lines < &co')
 g:ttoc_win_size                (default: '((&lines > &co) ? &lines : &co) / 2')
     Vim code that evaluates to the desired window width/heigth.
 
-                                                    *TToCCollect()*
-TToCCollect(world, return_index, ?additional_lines=0)
-
                                                     *TToC_GetLine_viki()*
 TToC_GetLine_viki(lnum, acc)
 
+                                                    *TToC_GetLine_bib()*
+TToC_GetLine_bib(lnum, acc)
+
                                                     *:TToC*
-[COUNT]TToC[!] [REGEXP]
+:[COUNT]TToC[!] [REGEXP]
     EXAMPLES: >
       TToC                   ... use standard settings
       TToC foo.\{-}\ze \+bar ... show this rx (don't include 'bar')
@@ -204,4 +217,15 @@ TToC_GetLine_viki(lnum, acc)
       3TToC! foo.\{-}bar     ... show lines matching this rx + 3 extra lines
 <
 
+                                                    *:Ttoc*
+:Ttoc
+    Synonym for |:TToC|.
 
+                                                    *:Ttocbg*
+:Ttocbg
+    Like |:TToC| but open the list in "background", i.e. the focus stays 
+    in the document window.
+
+
+
+vim:tw=78:fo=tcq2:isk=!-~,^*,^|,^":ts=8:ft=help:norl:
