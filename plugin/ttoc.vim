@@ -1,20 +1,21 @@
 " ttoc.vim -- A regexp-based ToC of the current buffer
-" @Author:      Thomas Link (micathom AT gmail com?subject=[vim])
+" @Author:      Tom Link (micathom AT gmail com?subject=[vim])
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2007-07-09.
-" @Last Change: 2008-09-16.
-" @Revision:    0.3.438
+" @Last Change: 2009-08-04.
+" @Revision:    463
 " GetLatestVimScripts: 2014 0 ttoc.vim
+" TODO: The cursor isn't set to the old location after using "preview".
 
 if &cp || exists("loaded_ttoc")
     finish
 endif
-if !exists('loaded_tlib') || loaded_tlib < 21
-    echoerr 'tlib >= 0.21 is required'
+if !exists('loaded_tlib') || loaded_tlib < 32
+    echoerr 'tlib >= 0.32 is required'
     finish
 endif
-let loaded_ttoc = 3
+let loaded_ttoc = 5
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -28,6 +29,15 @@ set cpo&vim
 "   2      ... use &foldmarker only if &foldmethod == marker
 "   string ... use as rx
 TLet g:ttoc_markers = 1
+
+" if has('signs')
+"     " If non-empty, mark locations with signs.
+"     TLet g:ttoc_sign = '~'
+"     exec 'sign define TToC text='. g:ttoc_sign .' texthl=Special'
+" else
+"     " :nodoc:
+"     TLet g:ttoc_sign = ''
+" endif
 
 
 " By default, assume that everything at the first column is important.
@@ -47,7 +57,7 @@ TLet g:ttoc_rx_c      = '^[[:alnum:]#].*'
 TLet g:ttoc_rx_cpp    = g:ttoc_rx_c
 TLet g:ttoc_rx_html   = '\(<h\d.\{-}</h\d>\|<\(html\|head\|body\|div\|script\|a\s\+name=\).\{-}>\|<.\{-}\<id=.\{-}>\)'
 TLet g:ttoc_rx_java   = '^\s*\(\(package\|import\|private\|public\|protected\|void\|int\|boolean\)\s\+\|\u\).*'
-TLet g:ttoc_rx_javascript = '^\s*\(var\s\+.\{-}\|\w\+\s*:\s*.\{-}\)\s*$'
+TLet g:ttoc_rx_javascript = '^\(var\s\+.\{-}\|\s*\w\+\s*:\s*\S.\{-}[,{]\)\s*$'
 TLet g:ttoc_rx_perl   = '^\([$%@]\|\s*\(use\|sub\)\>\).*'
 TLet g:ttoc_rx_php    = '^\(\w\|\s*\(class\|function\|var\|require\w*\|include\w*\)\>\).*'
 TLet g:ttoc_rx_python = '^\s*\(import\|class\|def\)\>.*'
@@ -81,7 +91,8 @@ TLet g:ttoc_world = {
                     \ {'key':  7, 'agent': 'ttoc#GotoLine',     'key_name': '<c-g>', 'help': 'Jump (don''t close the TOC window)'},
                     \ {'key': 60, 'agent': 'ttoc#GotoLine',     'key_name': '<',     'help': 'Jump (don''t close the TOC window)'},
                     \ {'key':  5, 'agent': 'tlib#agent#DoAtLine',     'key_name': '<c-e>', 'help': 'Run a command on selected lines'},
-                    \ {'key': 20, 'agent': 'ttoc#SetFollowCursor',    'key_name': '<c-t>', 'help': 'Toggle trace cursor'},
+                    \ {'key': "\<c-insert>", 'agent': 'ttoc#SetFollowCursor', 'key_name': '<c-ins>', 'help': 'Toggle trace cursor'},
+                    \ {'key': 28, 'agent': 'tlib#agent#ToggleStickyList',       'key_name': '<c-\>', 'help': 'Toggle sticky'},
                 \ ],
             \ }
             " \ 'scratch_vertical': (&lines > &co),
@@ -135,7 +146,7 @@ endf
 
 
 function! TToC_GetLine_bib(lnum, acc) "{{{3
-    for l in range(a:lnum + 1, a:lnum + 4)
+    for l in range(a:lnum + tlib#string#Count(a:acc[0], '\n'), a:lnum + 4)
         let t = getline(l)
         if !empty(t)
             call add(a:acc, t)
@@ -191,4 +202,13 @@ containing the word under the cursor; must be enabled for each buffer.
 - Follow/trace cursor functionality (toggled with <c-t>): instantly 
 preview the line under cursor.
 - Restore original position when using preview
+
+0.4
+- Handle multi-line regexps (thanks to M Weber for pointing this out)
+- Require tlib 0.27
+- Changed key for "trace cursor" from <c-t> to <c-insert>.
+
+0.5
+- Require tlib 0.32
+- Fill location list
 
