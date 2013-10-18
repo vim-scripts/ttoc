@@ -3,8 +3,8 @@
 " @Website:     http://www.vim.org/account/profile.php?user_id=4037
 " @License:     GPL (see http://www.gnu.org/licenses/gpl.txt)
 " @Created:     2007-11-11.
-" @Last Change: 2012-01-13.
-" @Revision:    0.0.93
+" @Last Change: 2013-02-22.
+" @Revision:    0.0.131
 
 let s:save_cpo = &cpo
 set cpo&vim
@@ -36,6 +36,7 @@ TLet g:ttoc_rx = '^\w.*'
 TLet g:ttoc_rx_bib    = '^@\w\+\s*{\s*\zs\S\{-}\ze\s*,'
 TLet g:ttoc_rx_c      = '^[[:alnum:]#].*'
 TLet g:ttoc_rx_cpp    = g:ttoc_rx_c
+TLet g:ttoc_rx_help   = '^\(.\{-}\~\|\s*\*.\{-}\*\s*\)$'
 TLet g:ttoc_rx_html   = '\(<h\d.\{-}</h\d>\|<\(html\|head\|body\|div\|script\|a\s\+name=\).\{-}>\|<.\{-}\<id=.\{-}>\)'
 TLet g:ttoc_rx_java   = '^\s*\(\(package\|import\|private\|public\|protected\|void\|int\|boolean\)\s\+\|\u\).*'
 TLet g:ttoc_rx_javascript = '^\(var\s\+.\{-}\|\s*\w\+\s*:\s*\S.\{-}[,{]\)\s*$'
@@ -65,7 +66,7 @@ TLet g:ttoc_world = {
                 \ 'type': 'm',
                 \ 'query': 'Select entry',
                 \ 'pick_last_item': 0,
-                \ 'scratch': '__ttoc__',
+                \ 'scratch': '__ttoc:%s__',
                 \ 'retrieve_eval': 'ttoc#Collect(world, 0)',
                 \ 'return_agent': 'ttoc#GotoLine',
                 \ 'key_handlers': [
@@ -89,6 +90,9 @@ TLet g:ttoc_vertical = '&lines < &co'
 TLet g:ttoc_win_size = 'min([60, ((&lines > &co) ? &lines : &co) / 2])'
 " TLet g:ttoc_win_size = '((&lines > &co) ? winheight(0) : winwidth(0)) / 2'
 
+" Events in the source buffer that result in a |:bwipeout| of the 
+" respective ttoc buffer.
+TLet g:ttoc#scratch#wipeout = 'BufDelete,BufWipeout,BufHidden'
 
 " function! TToC_GetLine_vim(lnum, acc) "{{{3
 "     let l = a:lnum
@@ -257,9 +261,10 @@ function! ttoc#View(rx, ...) "{{{3
     TVarArg ['partial_rx', 0], ['v_count', 0], ['p_count', 0], ['background', 0]
     let additional_lines = v_count ? v_count : p_count ? p_count : 0
     " TLogVAR partial_rx, additional_lines, v_count, p_count
+    let ft = &filetype
 
     if empty(a:rx)
-        let rx = s:DefaultRx()
+        let rx = s:DefaultRx(ft)
     else
         let rx = a:rx
         if partial_rx
@@ -273,6 +278,26 @@ function! ttoc#View(rx, ...) "{{{3
     else
         " TLogVAR ac
         let w = copy(g:ttoc_world)
+        if w.scratch =~ '%s'
+            " let w.scratch = printf(w.scratch, pathshorten(expand('%:p')))
+            let w.scratch = printf(w.scratch, expand('%:p'))
+            exec 'autocmd TToC' g:ttoc#scratch#wipeout '<buffer> call s:DeleteBuffer(bufnr(expand("<abuf>")),'. string(w.scratch) .')'
+        endif
+        if exists('g:ttoc_world_'. ft)
+            for [key, val] in items(g:ttoc_world_{ft})
+                if has_key(w, key)
+                    if type(val) == 3
+                        let w[key] += val
+                    elseif type(val) == 4
+                        let w[key] = extend(w[key], val)
+                    else
+                        let w[key] = copy(val)
+                    endif
+                else
+                    let w[key] = copy(val)
+                endif
+            endfor
+        endif
         let w.ttoc_rx = rx
         let [ac, ii] = ttoc#Collect(w, 1, additional_lines)
         " TLogVAR ac
@@ -289,6 +314,7 @@ function! ttoc#View(rx, ...) "{{{3
         let win_size = tlib#var#Get('ttoc_win_size', 'wbg')
         if !empty(win_size)
             " TLogDBG tlib#cmd#UseVertical('TToC')
+            " TLogVAR win_size, g:ttoc_vertical
             let use_vertical = eval(g:ttoc_vertical)
             if use_vertical == 1 || (use_vertical == -1 && tlib#cmd#UseVertical('TToC'))
                 let w.scratch_vertical = 1
@@ -316,8 +342,14 @@ function! ttoc#View(rx, ...) "{{{3
 endf
 
 
-function! s:DefaultRx() "{{{3
-    let rx = tlib#var#Get('ttoc_rx_'. &filetype, 'wbg')
+function! s:DeleteBuffer(bufnr, scratch) "{{{3
+    silent! exec 'bwipeout' bufnr(a:scratch)
+    silent! exec 'autocmd! TToC' g:ttoc#scratch#wipeout '<buffer='. a:bufnr .'>'
+endf
+
+
+function! s:DefaultRx(filetype) "{{{3
+    let rx = tlib#var#Get('ttoc_rx_'. a:filetype, 'wbg')
     if empty(rx)
         let rx = tlib#var#Get('ttoc_rx', 'wbg')
     endif
